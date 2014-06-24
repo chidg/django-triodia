@@ -1,11 +1,10 @@
 import requests
 from requests.exceptions import Timeout
-from models import Query, Taxon, GBIFResponse, Match
+from models import Taxon, Match
 
 
 def species_search(name, kingdom=None):
         """ Searches the GBIF name matching API for the name and returns the result in json format if successful """
-        confidence = 99
         payload = {'verbose': 'true', 'name': name}
         # Add the kingdom to the payload if it was selected, otherwise leave
         # blank
@@ -69,7 +68,7 @@ def process_response(gbif_response):
             name = text['canonicalName']
 
             # Test if name has changed
-            if text['synonym'] == True:
+            if text['synonym'] is True:
                 if text['rank'] == 'SPECIES' and text['canonicalName'] != text['species']:
                     name = text['species']
                     matchtype = 'synonym'
