@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block title %}Triodia - Query{% endblock %}
+
+{% block head %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+
+    $('#show_hidden_results').click(function(){
+        $('a.low-confidence').toggleClass('hidden');
+    });
+});
+
+</script>
+{% endblock %}
+{% block content %}
+<div class="container">
+<legend>Make a query</legend>
+<div class="row">
+    <form action="" method="post" class="form" enctype="multipart/form-data">
+    <div class="col-md-5">
+    {% csrf_token %}
+    {{ query_form }}
+    </div>
+    {% if query %}
+    <div class="col-md-5">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">{{ query }}</h3>
+            </div>
+            <div class="panel-body">
+                Kingdom: {{ query.kingdom }} <br />
+                Accessed: {{ query.times_accessed }} times
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    </form>
+</div>
+
+<div class="row">
+    <div class="results col-md-6">
+        <div class="panel panel-success">
+            <div class="panel-heading">
+                <h3 class="panel-title">Results</h3>
+            </div>
+            <div class="panel-body">
+                {% if results == 'Phrasename' %}
+                    That looks like a phrase name. Unfortunately, we don't support searching for phrase names at this stage.
+                {% elif results == 'Timeout' %}
+                    Sorry, it looks like we're having some network trouble. Try again in a few minutes.
+                {% elif results %}
+                    {% if results.0.matchtype == 'exact' or results.0.matchtype == 'fuzzy' or results.0.matchtype == 'synonym' %}
+                        {% if results.0.matchtype == 'exact' %}
+                            <h5>Looks like you got a good match:</h5>
+                        {% elif results.0.matchtype == 'fuzzy' %}
+                            <h5>We couldn't find the exact search term you used, but this is the closest match:</h5>
+                        {% elif results.0.matchtype == 'synonym' %}
+                            <h5>It looks like the taxon you searched for might have had a name change. Here's the new name:</h5>
+                        {% endif %}
+                        <a class="match list-group-item" href="#" data-key="{{result.taxon.key}}">
+                            <h4 class="list-group-item-heading">{{ results.0.taxon.name }}</h4>
+                            <p class="list-group-item-text">Rank: {{results.0.taxon.rank}} - Kingdom: {{ results.0.taxon.kingdom }} - {{ results.0.confidence }}% confidence</p>
+                            {% if results.0.matchtype == 'synonym' %}
+                            <p>Old name: {{ results.0.response.text.canonicalName}}</p>
+                            {% endif %}
+                        </a>
+                    {% endif %}
+                    {% with results|length as count %}
+                    {% if count > 1 %}
+                        <h5>We found {{ count }} alternative result{{count|pluralize}}:</h5>
+                        <ul class="list-group">
+                        {% for result in results %}
+                            {% if result.matchtype != 'exact' and result.matchtype != 'fuzzy' %}
+                                <a data-usagekey="{{result.key}}" href="#" class="list-group-item {% if result.confidence < 50 %}hidden low-confidence{% endif %}">
+                                    <h4 class="list-group-item-heading">{{ result.taxon.name }}</h4>
+                                    <p class="list-group-item-text">Rank: {{result.taxon.rank}} - Kingdom: {{ result.taxon.kingdom }} - {{ result.confidence }}% confidence</p>
+                                </a>
+                            {% endif %}
+                        {% endfor %}
+                        </ul>
+                        {% with results|last as last %}
+                        {% if last.confidence < 50 %}
+                        <a href="javascript:void(0)" id="show_hidden_results">Show more...</a>
+                        {% endif %}
+                        {% endwith %}
+                    {% endif %}
+                    {% endwith %}
+                {% else %}
+                    Sorry, there were no results for that search term.
+                {% endif %}
+             </div>
+             <div id="tree-diagram"></div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
