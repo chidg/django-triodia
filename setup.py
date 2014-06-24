@@ -8,13 +8,13 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
     name='django-triodia',
-    version='0.1a',
+    version='0.1b',
     packages=['triodia'],
     include_package_data=True,
     license='MIT License',  # example license
     description='A Django app to check taxonomic species names against web based data services such as GBIF.',
     long_description=README,
-    url='http://chidgilovitz.com/',
+    url='http://triodia.herokuapp.com/',
 	install_requires = [
 		'jsonfield>=0.9.20',
 		'requests>=2.3.0'

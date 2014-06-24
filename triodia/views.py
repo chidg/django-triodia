@@ -31,7 +31,6 @@ def query_form(request):
 				gbif_response = GBIFResponse(query=query, status=search_request[0], text=search_request[1], note=note)
 
 				results = process_response(gbif_response)
-				print results
 
 			elif search_request[0] == 'Timeout':
 				results = 'Timeout'
